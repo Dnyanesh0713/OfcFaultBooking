@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+{% extends 'base_restore.html' %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fault Book</title>
+</head>
+<body>
+{% block baseblock %}
+
+
+<div >
+    <h1 class="fancy-text"> your fault :  </h1>
+    {% if object %}
+
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="tablehead">
+        <th>fault id</th>
+        <th>SDCA</th>
+        <th>Routename</th>
+        <th>FaultType</th>
+        <th>Reporting_date_time</th>
+        <th>Traffic_Affected </th>
+        <th>Remarks </th>
+
+        <th>Fault_Restored_Date_Time </th>
+        <th>SJC_Used </th>
+        <th>OFC_Used </th>
+        <th>OFC_Type </th>
+        <th>PLB_Used </th>
+        <th>Trial_Pit </th>
+        <th>Trench </th>
+        <th>Reason_Of_Fault </th>
+        <th>Restored Status</th>
+
+        </thead>
+
+        {% for obj in object %}
+        <tr class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.id}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.SDCA}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Routename}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.FaultType}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Reporting_date_time}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Traffic_Affected}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Remarks}}</td>
+
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Fault_Restored_Date_Time}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.SJC_Used}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.OFC_Used}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.OFC_Type}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.PLB_Used}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Trial_Pit}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Trench}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Reason_Of_Fault}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{% if obj.is_updated %}Updated{% else %}Not Updated{% endif %}</td>
+        </tr>
+        <div class="container" align="center">
+        <a href="/update/{{obj.id}}"> <button type="submit" class="btn btn-primary"> Upadate Fault </button> </a>
+            </div>
+        {% endfor %}
+    </table>
+
+    {% else %}
+    <h1 class="fancy-text1">Data not found in the database </h1>
+{% endif %}
+</div>
+
+{% endblock %}
+</body>
+</html>

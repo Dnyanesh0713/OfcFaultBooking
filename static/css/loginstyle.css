@@ -1,0 +1,106 @@
+
+  /* Set a fixed height for the carousel */
+        .carousel {
+            max-width: 800px; /* Adjust this width as needed */
+            max-height: 600px; /* Adjust this height as needed */
+            overflow: hidden;
+        }
+
+        /* Make sure images are responsive and keep the same height */
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+.hero-section {
+            background: url('https://c0.wallpaperflare.com/preview/697/898/445/cloud-computing-illustration-technology.jpg') no-repeat center center/cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+/* style.css */
+body {
+    background: url('path/to/your/background.jpg') no-repeat center center fixed; /* Example background image */
+    background-size: cover;
+}
+
+.card {
+    opacity: 0.9; /* Optional: make the card slightly transparent */
+}
+
+
+/* Styling for navbar brand */
+.navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
+    color: #09091c !important;
+    transition: color 0.3s ease; /* Smooth color change */
+}
+
+/* Hover effect for brand */
+.navbar-brand:hover {
+    color: #a5bfd8 !important; /* Darker color on hover */
+}
+
+/* Buttons (nav-links) styling */
+.custom-btn {
+    border-radius: 0.5rem; /* Rounded buttons */
+    padding: 10px 20px;
+    font-weight: bold;
+    text-transform: uppercase; /* Uppercase text */
+    background-color: #007bff; /* Default blue background */
+    color: white; /* White text */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+
+/* Hover effect on buttons */
+.custom-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    color: white; /* White text on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+    transform: translateY(-3px); /* Lift button up on hover */
+}
+
+/* Active button styling (when clicked) */
+.custom-btn.active, .custom-btn:focus, .custom-btn:active {
+    background-color: #09091c !important; /* Green when active */
+    color: #fff !important; /* White text when active */
+    border: none;
+}
+
+/* Change background color on hover when button is active */
+.custom-btn.active:hover {
+    background-color: #218838; /* Darker green on hover when active */
+}
+
+/* Add space between navbar items */
+.navbar-nav .nav-item {
+    margin-right: 10px;  /* 10px gap between buttons */
+}
+
+/* Remove right margin for the last item */
+.navbar-nav .nav-item:last-child {
+    margin-right: 0;
+}
+
+/* Navbar responsiveness (for smaller screens) */
+@media (max-width: 414px) {
+
+      .navbar {
+          flex-direction: column;
+
+    }
+
+}
+      @media (max-width: 414px) {
+    .hero-section {
+        margin: 0;
+        padding: 0;
+    }
+}
+

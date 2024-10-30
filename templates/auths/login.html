@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+{% extends 'baselogin.html' %}
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BSNL Transmission</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/loginstyle.css' %}">
+</head>
+<body class="bg-light">
+{% block baseblock %}
+
+<div class="hero-section">
+    <!-- Slideshow -->
+    <div id="imageCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="{% static 'images/image01.jpg' %}" class="d-block w-100 img-fluid" alt="Image 1">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image02.jpg' %}" class="d-block w-100 img-fluid" alt="Image 2">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image03.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image04.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image05.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image06.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image07.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image08.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image09.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'images/image10.jpg' %}" class="d-block w-100 img-fluid" alt="Image 3">
+            </div>
+            <!-- Add more items similarly for testing -->
+        </div>
+
+        <!-- Carousel Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+    <!-- End of Slideshow -->
+
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow" style="width: 400px; background-color: #212122; border: 1px solid #020202; border-radius: 8px;">
+        <div class="card-body p-4">
+            <h5 class="custom-btn " >
+                Login to Your Account
+            </h5>
+            <form method="post" action="/login/">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username" class="form-label" style="color: #ffffff;">Username:</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label" style="color: #ffffff;">Password:</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                </div>
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Include Bootstrap JS and Popper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+</body>
+</html>
