@@ -44,8 +44,8 @@ jobs:
 
       - name: Debug AWS Variables
         run: |
-          echo "AWS_USER is $AWS_USER"
-          echo "AWS_HOST is $AWS_HOST"
+          echo "AWS_USER is ${{ secrets.AWS_USER }}"
+          echo "AWS_HOST is ${{ secrets.AWS_HOST }}"
 
 
       - name: Test SSH connection
