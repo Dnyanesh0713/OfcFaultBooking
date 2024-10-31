@@ -42,10 +42,14 @@ jobs:
           echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Debug AWS Variables
+      - name: Check Secret Access
         run: |
-          echo "AWS_USER is ${{ secrets.AWS_USER }}"
-          echo "AWS_HOST is ${{ secrets.AWS_HOST }}"
+          echo "AWS_USER is ${AWS_USER:-'Not found'}"
+          echo "AWS_HOST is ${AWS_HOST:-'Not found'}"
+        env:
+          AWS_USER: ${{ secrets.AWS_USER }}
+          AWS_HOST: ${{ secrets.AWS_HOST }}
+
 
 
       - name: Test SSH connection
