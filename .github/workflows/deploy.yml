@@ -42,8 +42,8 @@ jobs:
           AWS_USER: ${{ secrets.AWS_USER }}
         run: |
           ssh -o StrictHostKeyChecking=no $AWS_USER@$AWS_HOST << 'EOF'
-            cd /path/to/your/project  # Update with your project path
-            source /path/to/your/venv/bin/activate  # Activate your virtual environment
+            cd /home/ubuntu/myproject  # Update with your project path
+            source /home/ubuntu/myproject/venv/bin/activate  # Activate your virtual environment
             export $(cat .env | xargs)  # Load environment variables from .env
             python manage.py migrate  # Run migrations
             python manage.py collectstatic --noinput  # Collect static files
