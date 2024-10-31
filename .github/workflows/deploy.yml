@@ -25,6 +25,7 @@ jobs:
 
       - name: Copy .env file
         run: |
+          mkdir -p ~/.ssh  # Create the .ssh directory
           echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # Create SSH key file
           chmod 600 ~/.ssh/id_rsa  # Set permissions for the SSH key
           echo "AWS_HOST=${{ secrets.AWS_HOST }}" >> .env
