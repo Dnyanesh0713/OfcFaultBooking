@@ -36,15 +36,21 @@ jobs:
           echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
           echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
 
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
       - name: Deploy to AWS
         env:
           AWS_HOST: ${{ secrets.AWS_HOST }}
           AWS_USER: ${{ secrets.AWS_USER }}
         run: |
-          ssh -o StrictHostKeyChecking=no $AWS_USER@$AWS_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $AWS_USER@$AWS_HOST << 'EOF'
             cd /home/ubuntu/myproject  # Update with your project path
             source /home/ubuntu/myproject/.venv/bin/activate  # Activate your virtual environment
-            export $(cat .env | xargs)  # Load environment variables from .env
+            export $(cat /home/ubuntu/myproject/.env | xargs)  # Load environment variables
             python manage.py migrate  # Run migrations
             python manage.py collectstatic --noinput  # Collect static files
             sudo systemctl restart your-service  # Restart your Django app (modify as needed)
