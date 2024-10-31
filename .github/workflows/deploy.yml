@@ -42,6 +42,11 @@ jobs:
           echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $AWS_USER@$AWS_HOST "echo 'SSH connection successful'"
+
+
       - name: Deploy to AWS
         env:
           AWS_HOST: ${{ secrets.AWS_HOST }}
