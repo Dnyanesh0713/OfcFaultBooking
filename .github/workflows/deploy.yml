@@ -42,6 +42,12 @@ jobs:
           echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
+      - name: Debug AWS Variables
+        run: |
+          echo "AWS_USER is $AWS_USER"
+          echo "AWS_HOST is $AWS_HOST"
+
+
       - name: Test SSH connection
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $AWS_USER@$AWS_HOST "echo 'SSH connection successful'"
