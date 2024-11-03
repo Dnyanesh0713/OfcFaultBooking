@@ -1,0 +1,72 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - master  # Adjust as necessary (main or another branch)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Use the version of Python that your project requires
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Ensure you have a requirements.txt file in your project
+
+      - name: Copy .env file
+        run: |
+          mkdir -p ~/.ssh  # Create the .ssh directory
+          echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # Create SSH key file
+          chmod 600 ~/.ssh/id_rsa  # Set permissions for the SSH key
+          echo "AWS_HOST=${{ secrets.AWS_HOST }}" >> .env
+          echo "AWS_USER=${{ secrets.AWS_USER }}" >> .env
+          echo "TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}" >> .env
+          echo "TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}" >> .env
+          echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> .env
+          echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+          echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Check Secret Access
+        run: |
+          echo "AWS_USER is ${AWS_USER:-'Not found'}"
+          echo "AWS_HOST is ${AWS_HOST:-'Not found'}"
+        env:
+          AWS_USER: ${{ secrets.AWS_USER }}
+          AWS_HOST: ${{ secrets.AWS_HOST }}
+
+
+
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $AWS_USER@$AWS_HOST "echo 'SSH connection successful'"
+
+
+      - name: Deploy to AWS
+        env:
+          AWS_HOST: ${{ secrets.AWS_HOST }}
+          AWS_USER: ${{ secrets.AWS_USER }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $AWS_USER@$AWS_HOST << 'EOF'
+            cd /home/ubuntu/myproject  # Update with your project path
+            source /home/ubuntu/myproject/.venv/bin/activate  # Activate your virtual environment
+            export $(cat /home/ubuntu/myproject/.env | xargs)  # Load environment variables
+            python manage.py migrate  # Run migrations
+            python manage.py collectstatic --noinput  # Collect static files
+            sudo systemctl restart your-service  # Restart your Django app (modify as needed)
+          EOF
