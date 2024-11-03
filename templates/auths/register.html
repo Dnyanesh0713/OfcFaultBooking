@@ -9,84 +9,81 @@
 </head>
 <body class="bg-light">
 {% block baseblock %}
+
 <div class="hero-section ">
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow" style="width: 500px;margin-top:300px;">
+            <div class="card-body">
+                <!--*********************************Display the message from the views.py*******************************************-->
 
-<div class="container d-flex justify-content-center align-items-center vh-100">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show" style="margin-top:20px" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
 
+                <!--*****************************************************************************************************************-->
+                <!--                Creating the custome form for the registering the user -->
+                <h5 class="custom-btn">Create Your Account</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name:</label>
+                        <input type="text" id="first_name" name="first_name" class="form-control" required>
+                    </div>
 
-    <div class="card shadow" style="width: 500px;margin-top:300px;">
-        <div class="card-body" >
-            <!--*********************************Display the message from the views.py*******************************************-->
+                    <div class="mb-3">
+                        <label for="middle_name" class="form-label">Middle Name:</label>
+                        <input type="text" id="middle_name" name="middle_name" class="form-control">
+                    </div>
 
-               {% if messages %}
-               {% for message in messages %}
-            <div class="alert alert-danger alert-dismissible fade show" style="margin-top:20px" role="alert">
-                {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name:</label>
+                        <input type="text" id="last_name" name="last_name" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email (Username):</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mobile" class="form-label">Mobile:</label>
+                        <input type="text" id="mobile" name="mobile" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="sdca" class="form-label">SDCA:</label>
+                        <input type="text" id="sdca" name="sdca" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="post" class="form-label">Post:</label>
+                        <input type="text" id="post" name="post" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password:</label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                               required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+                {% if error %}
+                <div class="alert alert-danger mt-3">{{ error }}</div>
+                {% endif %}
             </div>
-             {% endfor %}
-                 {% endif %}
-
-<!--*****************************************************************************************************************-->
-
-            <h5 class="custom-btn">Create Your Account</h5>
-            <form method="post">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="first_name" class="form-label">First Name:</label>
-                    <input type="text" id="first_name" name="first_name" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="middle_name" class="form-label">Middle Name:</label>
-                    <input type="text" id="middle_name" name="middle_name" class="form-control">
-                </div>
-
-                <div class="mb-3">
-                    <label for="last_name" class="form-label">Last Name:</label>
-                    <input type="text" id="last_name" name="last_name" class="form-control" required>
-                </div>
-
-                 <div class="mb-3">
-                    <label for="email" class="form-label">Email (Username):</label>
-                    <input type="email" id="email" name="email" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="mobile" class="form-label">Mobile:</label>
-                    <input type="text" id="mobile" name="mobile" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="sdca" class="form-label">SDCA:</label>
-                    <input type="text" id="sdca" name="sdca" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="post" class="form-label">Post:</label>
-                    <input type="text" id="post" name="post" class="form-control" required>
-                </div>
-
-
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password:</label>
-                    <input type="password" id="password" name="password" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="confirm_password" class="form-label">Confirm Password:</label>
-                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100">Register</button>
-            </form>
-             {% if error %}
-    <div class="alert alert-danger mt-3">{{ error }}</div>
-    {% endif %}
         </div>
     </div>
-</div>
 </div>
 {% endblock %}
 </body>

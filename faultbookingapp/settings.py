@@ -12,10 +12,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-
+from django.utils import timezone
 # Load environment variables from the .env file
 load_dotenv()
 
+
+# For changing the Timezone at Local Time
+def get_local_now():
+    return timezone.localtime(timezone.now())
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -58,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware', # for maintaining the session
     'django.contrib.auth.middleware.AuthenticationMiddleware', #for login and logout action
     'middleware.auto_logout.AutoLogout',  #for auto logout feature
+    'middleware.changetimezone.TimezoneMiddleware', # For Converting the timezone as Local Time for every Request
 ]
 
 ROOT_URLCONF = 'faultbookingapp.urls'
@@ -120,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -156,3 +161,7 @@ SESSION_COOKIE_AGE = 300  # 1 minutes in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Log out on browser close
 SESSION_SAVE_EVERY_REQUEST = True
 
+# for testing purposre
+CSRF_TRUSTED_ORIGINS = [
+    'https://50cb-2409-40c2-801a-4842-7509-b075-7c77-4906.ngrok-free.app'
+]

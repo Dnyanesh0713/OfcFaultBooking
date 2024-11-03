@@ -1,12 +1,14 @@
 from django import forms
+
 from .models import bookfaultmodel
 
-#*************************Form for booking the fault all fields not shown other fields set to null*********************
+
+# *************************Form for booking the fault all fields not shown other fields set to null*********************
 
 class bookfaultform(forms.ModelForm):
     class Meta:
         model = bookfaultmodel
-        fields = ('SDCA','Routename','FaultType','Reporting_date_time','Traffic_Affected','Remarks',)
+        fields = ('SDCA', 'Routename', 'FaultType', 'Reporting_date_time', 'Traffic_Affected', 'Remarks',)
 
         # widget to decorate the model form
         widgets = {
@@ -14,7 +16,7 @@ class bookfaultform(forms.ModelForm):
             'SDCA': forms.Select(attrs={
                 'class': 'form-control',
                 'style': 'width: 37%;',
-           }),
+            }),
             'Routename': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter Route name. (A end - B end)',
@@ -25,7 +27,7 @@ class bookfaultform(forms.ModelForm):
             'Reporting_date_time': forms.DateTimeInput(attrs={
                 'type': 'datetime-local',
                 'class': 'form-control',
-                'placeholder': 'YYYY-MM-DD HH:MM',
+                'placeholder': 'DD-MM-YY HH:MM',
                 'style': 'width: 37%;',
             }),
             'Traffic_Affected': forms.Textarea(attrs={
@@ -41,9 +43,10 @@ class bookfaultform(forms.ModelForm):
                 'style': 'width: 37%;',
             }),
 
-            }
+        }
 
-#**************************Form for the Entering the fault id to fetch the entire fault****************************
+
+# **************************Form for the Entering the fault id to fetch the entire fault****************************
 
 class restoreform(forms.Form):
     Fault_ID = forms.IntegerField(
@@ -54,12 +57,15 @@ class restoreform(forms.Form):
         })
     )
 
-#*************************************Update form for the FRT All fields not shown and all fields not updatable*********************
+
+# *************************************Update form for the FRT All fields not shown and all fields not updatable*********************
 
 class updateform(forms.ModelForm):
     class Meta:
         model = bookfaultmodel
-        fields = ('SDCA','Routename','Reporting_date_time','Fault_Restored_Date_Time','SJC_Used','OFC_Used','OFC_Type','PLB_Used','Trial_Pit','Trench','Reason_Of_Fault','is_updated')
+        fields = (
+        'SDCA', 'Routename', 'Reporting_date_time', 'Fault_Restored_Date_Time', 'SJC_Used', 'OFC_Used', 'OFC_Type',
+        'PLB_Used', 'Trial_Pit', 'Trench', 'Reason_Of_Fault', 'is_updated')
 
         def __init__(self, *args, **kwargs):
             # Check if an instance is being updated
@@ -67,15 +73,16 @@ class updateform(forms.ModelForm):
             super().__init__(*args, **kwargs)
 
             # Make the datetime_field required if the instance exists (update mode)
-            if instance and instance.pk:
-                self.fields['Fault_Restored_Date_Time'].required = True
+            if instance and instance.calculate_downtime():
+                downtime_message = f"Total downtime: {instance.calculate_downtime()}"
+                self.fields['Fault_Restored_Date_Time'].help_text = downtime_message
 
         widgets = {
             'SDCA': forms.TextInput(attrs={
                 'class': 'form-control',
                 'style': 'width: 37%;',
-                 'readonly':True,
-               }),
+                'readonly': True,
+            }),
 
             'Routename': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -148,7 +155,8 @@ class updateform(forms.ModelForm):
             }),
         }
 
-#**************************** Update form for Admin all fields can updated ********************************************
+
+# **************************** Update form for Admin all fields can updated ********************************************
 
 class updateadminform(forms.ModelForm):
     class Meta:
@@ -159,14 +167,12 @@ class updateadminform(forms.ModelForm):
             'SDCA': forms.TextInput(attrs={
                 'class': 'form-control',
                 'style': 'width: 37%;',
-                 'readonly':True,
-               }),
+            }),
 
             'Routename': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter Route name. (A end - B end)',
                 'style': 'width: 37%;',
-                'readonly': True,
             }),
 
             'Reporting_date_time': forms.DateTimeInput(attrs={
@@ -174,7 +180,6 @@ class updateadminform(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'YYYY-MM-DD HH:MM',
                 'style': 'width: 37%;',
-                'readonly': True,
             }),
 
             'FaultType': forms.Select(attrs={

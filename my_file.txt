@@ -1,7 +1,8 @@
-id: 33
-SDCA: Jamkhed
-Routename: jamkhed - rajuri
-FaultType: PATCH CHORD
-Reporting_date_time: 2024-10-28 21:30:00+00:00
-Traffic_Affected: xyz
-Remarks: nil
+id: 41
+SDCA: Karjat
+Routename: A-B
+FaultType: OFC CUT
+Reporting_date_time: 2024-11-03 17:31:00+00:00
+Traffic_Affected: Nil
+Remarks: Nil
+Total_downtime: 

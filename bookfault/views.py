@@ -1,70 +1,79 @@
+import re
+import tempfile
 
-from django.shortcuts import render,redirect,get_object_or_404
-from .models import bookfaultmodel
-from .forms import bookfaultform,restoreform,updateform,updateadminform
-from django.http import HttpResponse
-from .send_sms import msgsend
-from .send_email import send_email_with_attachment
-from django.utils import timezone
-from openpyxl import Workbook
 from django.contrib import messages
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-import re
 from django.db import IntegrityError
-import tempfile
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from openpyxl import Workbook
+
+from .forms import bookfaultform, restoreform, updateform, updateadminform
+from .models import bookfaultmodel, calculate_downtime
+from .send_email import send_email_with_attachment
+from .send_sms import msgsend
+
 
 def loginhome(r):
     if r.method == 'POST':
         if r.user.is_authenticated:
             return redirect('/home/')  # Redirect if already logged in
-    return render(r,'auths/login.html')
+    return render(r, 'auths/login.html')
 
 
-#************************************************************************************************************************
-#*******************Uses to send whatsapp sms to a number according to SDCA FRT teams************************************
+# ************************************************************************************************************************
+# *******************Uses to send whatsapp sms to a number according to SDCA FRT teams************************************
 def sortsdca(sdca):
-    if sdca in ['Jamkhed','Karjat']:
-        msgsend() # Send whats app message to the registered number for Jamkhed SDCA
+    if sdca in ['Jamkhed', 'Karjat']:
+        msgsend()  # Send whats app message to the registered number for Jamkhed SDCA
     else:
         pass
 
-#************************************************************************************************************************
-#****************************Dislay Home, all tabs in base.html extended to index html**********************************
+
+# ************************************************************************************************************************
+# ****************************Dislay Home, all tabs in base.html extended to index html**********************************
 @login_required
 def home(r):
-    return render(r,'index.html')
+    return render(r, 'index.html')
 
-#************************************************************************************************************************
-#************************Uses to show fault booking form and triggering message sending funtion.(base_book.html extended to bookfault.html)*************************
+
+# ************************************************************************************************************************
+# ************************Uses to show fault booking form and triggering message sending funtion.(base_book.html extended to bookfault.html)*************************
 
 def OfcFaultView(r):
+    now = timezone.datetime
     form = bookfaultform()
     if r.method == 'POST':
         form = bookfaultform(r.POST)
         if form.is_valid():
-            form.save()
-            sortsdca(r.POST['SDCA'])
-            obj = bookfaultmodel.objects.all().values_list('id').last()
-            success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
-            messages.success(r, success_message)  # Add message to be shown in the modal
-            return redirect("/bookfault/")  # Redirect after successful submission
-    return render(r,'bookfault/bookfault.html',{'form':form})
+            if form.cleaned_data['SDCA'] == "1":
+                form.add_error('SDCA', 'Please select your SDCA.')
+            else:
+                form.save()
+                sortsdca(r.POST['SDCA'])
+                obj = bookfaultmodel.objects.all().values_list('id').last()
+                success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
+                messages.success(r, success_message)  # Add message to be shown in the modal
+                return redirect("/bookfault/")  # Redirect after successful submission
+    return render(r, 'bookfault/bookfault.html', {'form': form})
 
-#************************************************************************************************************************
-#***********************Calling funtion of email_send module to send the email******************************************
+
+# ************************************************************************************************************************
+# ***********************Calling funtion of email_send module to send the email******************************************
 # def GetReport(r):
 #     send_email_with_attachment() #Send the Email to given mail id
 #     success_message = "Your Email has been sent successfully!"  # Success message
 #     messages.success(r,success_message)  # Add message to be shown in the modal
 #     return redirect("/home/")  # Redirect after successful submission
 
-#************************************************************************************************************************
-#*******************This funtion is used to display single field form and catch id entered by restoration team to update particular fault********************
-#*******************(base_restore.html extended to restorefault.html)*************************************************************************
+# ************************************************************************************************************************
+# *******************This funtion is used to display single field form and catch id entered by restoration team to update particular fault********************
+# *******************(base_restore.html extended to restorefault.html)*************************************************************************
 def FaultRestoredView(r):
     global id
     form = restoreform()
@@ -83,68 +92,77 @@ def FaultRestoredView(r):
     return render(r, 'restorefault/restorefault.html', {'form': form})
 
 
-#************************************************************************************************************************
-#*************used to Display the fault that has to be updated by FRT, update link provided in display.html*****************
+# ************************************************************************************************************************
+# *************used to Display the fault that has to be updated by FRT, update link provided in display.html*****************
 def displayrec(r):
-    object = bookfaultmodel.objects.get(id = id)
+    object = bookfaultmodel.objects.get(id=id)
     return render(r, 'restorefault/display.html', {'object': [object]})
 
-#************************************************************************************************************************
-#*****************************Updating the form or filling the fault details which is restored by FRT*********************************************
-def updaterec(r,id):
 
+# ************************************************************************************************************************
+# *****************************Updating the form or filling the fault details which is restored by FRT*********************************************
+def updaterec(r, id):
     objects = bookfaultmodel.objects.get(id=id)
     form = updateform(instance=objects)
     if r.method == 'POST':
-        form = updateform(r.POST,instance=objects)
+        form = updateform(r.POST, instance=objects)
         if form.is_valid():
             if form.cleaned_data['Fault_Restored_Date_Time'] is None:
-                form.add_error('Fault_Restored_Date_Time', 'Please select Fault restored Date and Time.')  # Custom error
+                form.add_error('Fault_Restored_Date_Time',
+                               'Please select Fault restored Date and Time.')  # Custom error
             elif form.cleaned_data['is_updated'] == False:
-                form.add_error('is_updated', 'Please Click on checkbox then submit.')  # Custom error
+                form.add_error('SDCA', 'Please Click on Is Updated checkbox then submit.')  # Custom error
             else:
+                downtime = calculate_downtime(form.cleaned_data['Fault_Restored_Date_Time'],
+                                              form.cleaned_data['Reporting_date_time'])
                 form.save()
-                success_message = "Your fault Restoration Report has been submitted successfully!"  # Success message
+                success_message = f"Your fault Restoration Report has been submitted successfully!\n" \
+                                  f"Total Downtime for this fault is: {downtime}"  # Success message
                 messages.success(r, success_message)  # Add message to be shown in the modal
                 return redirect("/faultrestore/")  # Redirect after successful submission
-    return render(r,'restorefault/update.html',{'form':form})
+    return render(r, 'restorefault/update.html', {'form': form})
 
 
-#************************************************************************************************************************
-#*******************Update fault by Admin********************************************************************************
+# ************************************************************************************************************************
+# *******************Update fault by Admin********************************************************************************
 
-def updateadmin(r,id):
-
+def updateadmin(r, id):
     objects = bookfaultmodel.objects.get(id=id)
     form = updateadminform(instance=objects)
     if r.method == 'POST':
-        form = updateadminform(r.POST,instance=objects)
+        form = updateadminform(r.POST, instance=objects)
         if form.is_valid():
             if form.cleaned_data['Fault_Restored_Date_Time'] is None:
-                form.add_error('Fault_Restored_Date_Time', 'Please select Fault restored Date and Time.')  # Custom error
+                form.add_error('Fault_Restored_Date_Time',
+                               'Please select Fault restored Date and Time.')  # Custom error
             elif form.cleaned_data['is_updated'] == False:
-                form.add_error('is_updated', 'Please Click on checkbox then submit.')  # Custom error
+                form.add_error('SDCA', 'Please Click on Is Updated checkbox then submit.')  # Custom error
             else:
+                downtime = calculate_downtime(form.cleaned_data['Fault_Restored_Date_Time'],
+                                              form.cleaned_data['Reporting_date_time'])
                 form.save()
-                success_message = "Your fault Restoration Report has been Updated successfully!"  # Success message
+                success_message = f"Your fault Updated successfully!\n" \
+                                  f"Total Downtime for this fault is: {downtime}"  # Success message
                 messages.success(r, success_message)  # Add message to be shown in the modal
                 return redirect("/home/")  # Redirect after successful submission
-    return render(r,'restorefault/update.html',{'form':form})
+    return render(r, 'restorefault/update.html', {'form': form})
 
-#************************************************************************************************************************
-#*******************Delete a particular fault here***********************************************************************
-def deletefault(r,id):
-    #objects = bookfaultmodel.objects.get(id = id)
+
+# ************************************************************************************************************************
+# *******************Delete a particular fault here***********************************************************************
+def deletefault(r, id):
+    # objects = bookfaultmodel.objects.get(id = id)
     objects = get_object_or_404(bookfaultmodel, id=id)
     objects.delete()
     success_message = "Your Fault has been Deleted successfully!"  # Success message
     messages.success(r, success_message)  # Add message to be shown in the modal
     return redirect("/home/")
 
-#************************************************************************************************************************
-#******************Download Excel Facility is added here ****************************************************************
 
-def export_to_excel(queryset,flg, filename="data_export.xlsx"):
+# ************************************************************************************************************************
+# ******************Download Excel Facility is added here ****************************************************************
+
+def export_to_excel(queryset, flg, filename="data_export.xlsx"):
     # Create a new workbook and add a worksheet
     workbook = Workbook()
     worksheet = workbook.active
@@ -184,7 +202,7 @@ def export_to_excel(queryset,flg, filename="data_export.xlsx"):
         # Save excel file temporary
         temp_file = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
         workbook.save(temp_file.name)
-        return  temp_file.name
+        return temp_file.name
     else:
 
         # Set up the response as an Excel file
@@ -195,13 +213,14 @@ def export_to_excel(queryset,flg, filename="data_export.xlsx"):
         workbook.save(response)
         return response
 
-#************************************************************************************************************************
-#******************** Display diff category of faults and Download Functions logic*************************************************************
+
+# ************************************************************************************************************************
+# ******************** Display diff category of faults and Download Functions logic*************************************************************
 
 def displayallfaults(r):
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
-    order = r.GET.get('order','asc')
+    order = r.GET.get('order', 'asc')
     # If sorting parameters are present, add ordering
     if sort_by and order:
         if order == 'desc':
@@ -214,24 +233,25 @@ def displayallfaults(r):
 
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
-        return export_to_excel(objects,flag, filename="All_Faults.xlsx")
+        return export_to_excel(objects, flag, filename="All_Faults.xlsx")
 
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "All_Faults.xlsx"
-        tmpfile = export_to_excel(objects,flag, filename="All_Faults.xlsx")
-        send_email_with_attachment(tmpfile,flname)
+        tmpfile = export_to_excel(objects, flag, filename="All_Faults.xlsx")
+        send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
-        messages.success(r,success_message)  # Add message to be shown in the modal
+        messages.success(r, success_message)  # Add message to be shown in the modal
         return redirect("/home/")  # Redirect after successful submission
 
-    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by,"order": order})
+    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by, "order": order})
+
 
 def displaydailyfaults(r):
     today = timezone.now().date()
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
-    order = r.GET.get('order','asc')
+    order = r.GET.get('order', 'asc')
     # If sorting parameters are present, add ordering
     if sort_by and order:
         if order == 'desc':
@@ -249,27 +269,31 @@ def displaydailyfaults(r):
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Daily_Faults.xlsx"
-        tmpfile = export_to_excel(objects,flag, filename="Daily_Faults.xlsx")
-        send_email_with_attachment(tmpfile,flname)
+        tmpfile = export_to_excel(objects, flag, filename="Daily_Faults.xlsx")
+        send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
-        messages.success(r,success_message)  # Add message to be shown in the modal
+        messages.success(r, success_message)  # Add message to be shown in the modal
         return redirect("/home/")  # Redirect after successful submission
-    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by,"order": order})
+    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by, "order": order})
+
 
 def displaymonthlyfaults(r):
     now = timezone.now()
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
-    order = r.GET.get('order','asc')
+    order = r.GET.get('order', 'asc')
     # If sorting parameters are present, add ordering
     if sort_by and order:
         if order == 'desc':
-            objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,Reporting_date_time__month=now.month).order_by(f'-{sort_by}')
+            objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,
+                                                    Reporting_date_time__month=now.month).order_by(f'-{sort_by}')
         else:
-            objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,Reporting_date_time__month=now.month).order_by(sort_by)
+            objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,
+                                                    Reporting_date_time__month=now.month).order_by(sort_by)
     else:
         # Define the queryset without ordering by default
-        objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,Reporting_date_time__month=now.month)
+        objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,
+                                                Reporting_date_time__month=now.month)
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
         return export_to_excel(objects, flag, filename="Monthly_Faults.xlsx")
@@ -277,17 +301,18 @@ def displaymonthlyfaults(r):
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Monthly_Faults.xlsx"
-        tmpfile = export_to_excel(objects,flag, filename="Monthly_Faults.xlsx")
-        send_email_with_attachment(tmpfile,flname)
+        tmpfile = export_to_excel(objects, flag, filename="Monthly_Faults.xlsx")
+        send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
-        messages.success(r,success_message)  # Add message to be shown in the modal
+        messages.success(r, success_message)  # Add message to be shown in the modal
         return redirect("/home/")  # Redirect after successful submission
-    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by,"order": order})
+    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by, "order": order})
+
 
 def displaynotrestored(r):
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
-    order = r.GET.get('order','asc')
+    order = r.GET.get('order', 'asc')
     # If sorting parameters are present, add ordering
     if sort_by and order:
         if order == 'desc':
@@ -305,25 +330,28 @@ def displaynotrestored(r):
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Not_Restored_faults.xlsx"
-        tmpfile = export_to_excel(objects,flag, filename="Not_Restored_faults.xlsx")
-        send_email_with_attachment(tmpfile,flname)
+        tmpfile = export_to_excel(objects, flag, filename="Not_Restored_faults.xlsx")
+        send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
-        messages.success(r,success_message)  # Add message to be shown in the modal
+        messages.success(r, success_message)  # Add message to be shown in the modal
         return redirect("/home/")  # Redirect after successful submission
-    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by,"order": order})
+    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by, "order": order})
 
-#*************************************************************************************************************************************
-#******************************Register User Logic written here *****************************************************************
+
+# *************************************************************************************************************************************
+# ******************************Register User Logic written here *****************************************************************
 
 def validate_email(email):
     # Simple regex for validating email format
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(email_regex, email)
 
+
 def validate_mobile(mobile):
     # Regex for validating Indian mobile number format (10 digits)
     mobile_regex = r'^[789]\d{9}$'  # Starts with 7, 8, or 9 and followed by 9 digits
     return re.match(mobile_regex, mobile)
+
 
 def register(request):
     if request.method == 'POST':
@@ -378,8 +406,8 @@ def register(request):
     return render(request, 'auths/register.html')
 
 
-#*************************************************************************************************************************************
-#******************************Login and Logout User Logic written here *****************************************************************
+# *************************************************************************************************************************************
+# ******************************Login and Logout User Logic written here *****************************************************************
 
 def user_login(request):
     image_range = range(1, 11)  # Create a range from 1 to 10
@@ -395,7 +423,7 @@ def user_login(request):
             return redirect('/home/')  # Redirect to a home page or dashboard
         else:
             return render(request, 'auths/login.html', {'error': 'Invalid credentials'})
-    return render(request, 'auths/login.html',{'image_range': image_range})
+    return render(request, 'auths/login.html', {'image_range': image_range})
 
 
 def user_logout(request):

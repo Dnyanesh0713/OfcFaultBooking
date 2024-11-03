@@ -1,5 +1,16 @@
-
-
+#date-time {
+    background-color: #5c5959; /* Light gray background */
+    font-size: 1.6em; /* Increase font size slightly */
+    font-family: Arial, sans-serif;
+    color: #ffffff; /* Dark text color */
+    text-align: center;
+    padding: 10px; /* Padding around the text */
+    margin-top: 10px;
+    width: fit-content; /* Auto width based on content */
+    margin: 3px auto; /* Center the div horizontally */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15); /* Add a subtle shadow */
+}
 .hero-section {
             background: url('https://c8.alamy.com/comp/2A4WETG/in-this-photo-illustration-popular-telecom-company-bsnl-logo-seen-display-on-a-smartphone-2A4WETG.jpg') no-repeat center center/cover;
             height: 100vh;

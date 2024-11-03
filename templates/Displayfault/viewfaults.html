@@ -6,31 +6,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSNL Transmission</title>
-
 </head>
+
 <body>
 {% block baseblock %}
 
-    <h2 class="text-center mb-4 fancy-text1">All faults </h2>
-    <div class="table-responsive">
+<h2 class="text-center mb-4 fancy-text1">All faults </h2>
+<div class="table-responsive">
     {% if objects %}
     <table class="table table-bordered table-striped table-hover">
         <thead class="tablehead">
         <th>fault id</th>
         <th><a href="?sort_by=SDCA&order={% if order == 'asc' %}desc{% else %}asc{% endif %}">SDCA</a></th>
         <th>Routename</th>
-        <th> <a href="?sort_by=FaultType&order={% if sort_by == 'FaultType' and order == 'asc' %}desc{% else %}asc{% endif %}">Fault Type</a></th>
-        <th> <a href="?sort_by=Reporting_date_time&order={% if sort_by == 'Reporting_date_time' and order == 'asc' %}desc{% else %}asc{% endif %}">Reporting_date_time</a></th>
-        <th>Traffic_Affected </th>
-        <th>Remarks </th>
-        <th> <a href="?sort_by=Fault_Restored_Date_Time&order={% if sort_by == 'Fault_Restored_Date_Time' and order == 'asc' %}desc{% else %}asc{% endif %}">Fault_Restored_Date_Time</a></th>
-        <th>SJC_Used </th>
-        <th>OFC_Used </th>
-        <th>OFC_Type </th>
-        <th>PLB_Used </th>
-        <th>Trial_Pit </th>
-        <th>Trench </th>
-        <th>Reason_Of_Fault </th>
+        <th>
+            <a href="?sort_by=FaultType&order={% if sort_by == 'FaultType' and order == 'asc' %}desc{% else %}asc{% endif %}">Fault
+                Type</a></th>
+        <th>
+            <a href="?sort_by=Reporting_date_time&order={% if sort_by == 'Reporting_date_time' and order == 'asc' %}desc{% else %}asc{% endif %}">Reporting_date_time</a>
+        </th>
+        <th>Traffic_Affected</th>
+        <th>Remarks</th>
+        <th>
+            <a href="?sort_by=Fault_Restored_Date_Time&order={% if sort_by == 'Fault_Restored_Date_Time' and order == 'asc' %}desc{% else %}asc{% endif %}">Fault_Restored_Date_Time</a>
+        </th>
+        <th>SJC_Used</th>
+        <th>OFC_Used</th>
+        <th>OFC_Type</th>
+        <th>PLB_Used</th>
+        <th>Trial_Pit</th>
+        <th>Trench</th>
+        <th>Reason_Of_Fault</th>
+        <th>
+            <a href="?sort_by=Total_downtime&order={% if sort_by == 'Total_downtime' and order == 'asc' %}desc{% else %}asc{% endif %}">Total
+                Downtime</a></th>
         <th>Restored Status</th>
         <th>Update Fault</th>
         <th>Delete Fault</th>
@@ -46,7 +55,9 @@
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Traffic_Affected}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Remarks}}</td>
 
-            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Fault_Restored_Date_Time}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">
+                {{obj.Fault_Restored_Date_Time}}
+            </td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.SJC_Used}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.OFC_Used}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.OFC_Type}}</td>
@@ -54,29 +65,37 @@
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Trial_Pit}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Trench}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Reason_Of_Fault}}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Total_downtime}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{% if obj.is_updated %}Updated{% else %}Not Updated{% endif %}</td>
-           <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}"> <a href="/updateadmin/{{obj.id}}"><button type="submit" class="btn btn-primary">Upadate Fault</button></a></td>
-           <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">
-    <button onclick="confirmDelete('{{ obj.id }}')" type="button" class="btn btn-danger">Delete Fault</button> </td></tr>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}"><a
+                    href="/updateadmin/{{obj.id}}">
+                <button type="submit" class="btn btn-primary">Upadate Fault</button>
+            </a></td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">
+                <button onclick="confirmDelete('{{ obj.id }}')" type="button" class="btn btn-danger">Delete Fault
+                </button>
+            </td>
+        </tr>
 
         {% endfor %}
     </table>
     <div style="display: flex; justify-content: center; margin-top: 20px;margin-bottom:20px">
-    <a href="?download=true" class="btn btn-primary">
-        <i class="fas fa-file-excel"></i> Download Excel
-    </a>
-</div>
+        <a href="?download=true" class="btn btn-primary">
+            <i class="fas fa-file-excel"></i> Download Excel
+        </a>
+    </div>
     {% else %}
     <h1 class="fancy-text1">No faults to show.....Thank you...!!!!</h1>
-{% endif %}
-    </div>
+    {% endif %}
+</div>
+<!--JavaScript For the Display Confirm Delete Button-->
 <script>
-function confirmDelete(id) {
-    if (confirm("Are you sure you want to delete this Fault?")) {
-        // If user confirms, redirect to the delete view
-        window.location.href = "/deletefault/" + id;
+    function confirmDelete(id) {
+        if (confirm("Are you sure you want to delete this Fault?")) {
+            // If user confirms, redirect to the delete view
+            window.location.href = "/deletefault/" + id;
+        }
     }
-}
 </script>
 
 {% endblock %}
