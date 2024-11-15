@@ -48,6 +48,10 @@ class bookfaultmodel(models.Model):
     Trench = models.CharField(max_length=10,null=False,default='')
     Reason_Of_Fault = models.CharField(max_length=100, null=False,default='')
     Total_downtime = models.CharField(max_length=50,editable=False,default='')
+    Transnet_ID = models.CharField(max_length=10,null=True,blank=True,default='')
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    Admin_Remarks = models.TextField(null=True,blank=True,default='')
     is_updated = models.BooleanField(null=False,default=False)
 
 

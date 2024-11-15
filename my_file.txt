@@ -1,8 +1,10 @@
-id: 41
-SDCA: Karjat
-Routename: A-B
+*"Fault Alert...!!!" Your JAMKHED - RAJURI Route Failed please restore it on priority.*
+id: 11
+SDCA: Shevgaon
+Routename: jamkhed - rajuri
 FaultType: OFC CUT
-Reporting_date_time: 2024-11-03 17:31:00+00:00
-Traffic_Affected: Nil
-Remarks: Nil
-Total_downtime: 
+Reporting_date_time: 2024-11-13 22:52:00
+Traffic_Affected: ad
+Remarks: 
+latitude: None
+longitude: None

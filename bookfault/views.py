@@ -1,6 +1,7 @@
 import re
 import tempfile
-
+import pytz
+from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
@@ -12,11 +13,10 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from openpyxl import Workbook
-
 from .forms import bookfaultform, restoreform, updateform, updateadminform
 from .models import bookfaultmodel, calculate_downtime
 from .send_email import send_email_with_attachment
-from .send_sms import msgsend
+from .send_sms import msgsend,restorationmsg,msgsend_system_fault
 
 
 def loginhome(r):
@@ -28,11 +28,11 @@ def loginhome(r):
 
 # ************************************************************************************************************************
 # *******************Uses to send whatsapp sms to a number according to SDCA FRT teams************************************
-def sortsdca(sdca):
-    if sdca in ['Jamkhed', 'Karjat']:
-        msgsend()  # Send whats app message to the registered number for Jamkhed SDCA
-    else:
-        pass
+def sortsdca(sdca,fault_type):
+    if sdca and fault_type != 'SYSTEM':
+        msgsend()  # Send whatsapp message to the registered number for booking the fault
+    elif sdca and fault_type == 'SYSTEM':
+        msgsend_system_fault()
 
 
 # ************************************************************************************************************************
@@ -55,7 +55,7 @@ def OfcFaultView(r):
                 form.add_error('SDCA', 'Please select your SDCA.')
             else:
                 form.save()
-                sortsdca(r.POST['SDCA'])
+                sortsdca(r.POST['SDCA'],r.POST['FaultType'])
                 obj = bookfaultmodel.objects.all().values_list('id').last()
                 success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
                 messages.success(r, success_message)  # Add message to be shown in the modal
@@ -63,13 +63,6 @@ def OfcFaultView(r):
     return render(r, 'bookfault/bookfault.html', {'form': form})
 
 
-# ************************************************************************************************************************
-# ***********************Calling funtion of email_send module to send the email******************************************
-# def GetReport(r):
-#     send_email_with_attachment() #Send the Email to given mail id
-#     success_message = "Your Email has been sent successfully!"  # Success message
-#     messages.success(r,success_message)  # Add message to be shown in the modal
-#     return redirect("/home/")  # Redirect after successful submission
 
 # ************************************************************************************************************************
 # *******************This funtion is used to display single field form and catch id entered by restoration team to update particular fault********************
@@ -116,6 +109,12 @@ def updaterec(r, id):
                 downtime = calculate_downtime(form.cleaned_data['Fault_Restored_Date_Time'],
                                               form.cleaned_data['Reporting_date_time'])
                 form.save()
+                dt = r.POST['Fault_Restored_Date_Time']
+                dts = datetime.strptime(dt, "%Y-%m-%dT%H:%M")
+                aware_datetimes = timezone.make_aware(dts, timezone.get_current_timezone())
+                formatted_datetimes = aware_datetimes.strftime("%Y-%m-%d %H:%M:%S%z")
+                restorationmsg(formatted_datetimes)
+
                 success_message = f"Your fault Restoration Report has been submitted successfully!\n" \
                                   f"Total Downtime for this fault is: {downtime}"  # Success message
                 messages.success(r, success_message)  # Add message to be shown in the modal
@@ -173,7 +172,7 @@ def export_to_excel(queryset, flg, filename="data_export.xlsx"):
         'Fault ID', 'SDCA', 'Routename', 'FaultType', 'Reporting Date Time',
         'Traffic Affected', 'Remarks', 'Fault Restored Date Time', 'SJC Used',
         'OFC Used', 'OFC Type', 'PLB Used', 'Trial Pit', 'Trench',
-        'Reason Of Fault', 'Restored Status'
+        'Reason Of Fault','Total Downtime','Transnet ID','Admin Remarks', 'Restored Status'
     ]
     worksheet.append(headers)
 
@@ -195,6 +194,9 @@ def export_to_excel(queryset, flg, filename="data_export.xlsx"):
             obj.Trial_Pit,
             obj.Trench,
             obj.Reason_Of_Fault,
+            obj.Total_downtime,
+            obj.Transnet_ID,
+            obj.Admin_Remarks,
             "Restored" if obj.is_updated else "Not Restored"
         ]
         worksheet.append(row)
@@ -217,50 +219,85 @@ def export_to_excel(queryset, flg, filename="data_export.xlsx"):
 # ************************************************************************************************************************
 # ******************** Display diff category of faults and Download Functions logic*************************************************************
 
+
+from datetime import datetime
+from django.utils import timezone
+from .models import bookfaultmodel
+
 def displayallfaults(r):
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
     order = r.GET.get('order', 'asc')
-    # If sorting parameters are present, add ordering
-    if sort_by and order:
-        if order == 'desc':
-            objects = bookfaultmodel.objects.all().order_by(f'-{sort_by}')
-        else:
-            objects = bookfaultmodel.objects.all().order_by(sort_by)
+
+    # Get start and end date from the request (in 'YYYY-MM-DD' format)
+    start_date_str = r.GET.get('start_date')
+    end_date_str = r.GET.get('end_date')
+    transnet_id = r.GET.get('transnet_id')
+
+    # Convert start and end dates to datetime objects if they are provided
+    if start_date_str and end_date_str:
+        global filesave
+        # Convert the datetime string (e.g., '2024-11-01T13:27') to a datetime object
+        dts = datetime.strptime(start_date_str, "%Y-%m-%dT%H:%M")
+        dte = datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M")
+        aware_datetimes1 = timezone.make_aware(dts, timezone.get_current_timezone())
+        aware_datetimes2 = timezone.make_aware(dte, timezone.get_current_timezone())
+        formatted_datetimes1 = aware_datetimes1.strftime("%Y-%m-%d %H:%M:%S%z")
+        formatted_datetimes2 = aware_datetimes2.strftime("%Y-%m-%d %H:%M:%S%z")
+        filters = {}
+        filters['Reporting_date_time__gte'] = formatted_datetimes1
+        filters['Reporting_date_time__lte'] = formatted_datetimes2
+
+        objects = bookfaultmodel.objects.filter(**filters)
+        filesave = objects
+
+    elif transnet_id:
+        objects = [bookfaultmodel.objects.get(Transnet_ID=transnet_id)]
+        filesave = objects
     else:
-        # Define the queryset without ordering by default
         objects = bookfaultmodel.objects.all()
 
+    # Download functionality
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
-        return export_to_excel(objects, flag, filename="All_Faults.xlsx")
+        return export_to_excel(filesave, flag, filename="All_Faults.xlsx")
 
+    # Email functionality
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "All_Faults.xlsx"
-        tmpfile = export_to_excel(objects, flag, filename="All_Faults.xlsx")
+        tmpfile = export_to_excel(filesave, flag, filename="All_Faults.xlsx")
         send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
         messages.success(r, success_message)  # Add message to be shown in the modal
         return redirect("/home/")  # Redirect after successful submission
 
-    return render(r, "Displayfault/viewfaults.html", {"objects": objects, "sort_by": sort_by, "order": order})
-
+    return render(r, "Displayfault/viewfaultsort.html", {"objects": objects, "sort_by": sort_by, "order": order})
 
 def displaydailyfaults(r):
-    today = timezone.now().date()
+    today_start = timezone.localtime(timezone.now()).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
     order = r.GET.get('order', 'asc')
     # If sorting parameters are present, add ordering
     if sort_by and order:
         if order == 'desc':
-            objects = bookfaultmodel.objects.filter(Reporting_date_time__date=today).order_by(f'-{sort_by}')
+            objects = bookfaultmodel.objects.filter(
+                Reporting_date_time__gte=today_start,
+                Reporting_date_time__lt=today_end
+            ).order_by(f'-{sort_by}')
         else:
-            objects = bookfaultmodel.objects.filter(Reporting_date_time__date=today).order_by(sort_by)
+            objects = bookfaultmodel.objects.filter(
+                Reporting_date_time__gte=today_start,
+                Reporting_date_time__lt=today_end
+            ).order_by(sort_by)
     else:
         # Define the queryset without ordering by default
-        objects = bookfaultmodel.objects.filter(Reporting_date_time__date=today)
+        objects = bookfaultmodel.objects.filter(
+            Reporting_date_time__gte=today_start,
+            Reporting_date_time__lt=today_end
+        )
 
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
@@ -278,22 +315,33 @@ def displaydailyfaults(r):
 
 
 def displaymonthlyfaults(r):
-    now = timezone.now()
+    now = timezone.localtime(timezone.now())
+    start_of_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
+    if now.month == 12:
+        start_of_next_month = datetime(now.year + 1, 1, 1, tzinfo=now.tzinfo)
+    else:
+        start_of_next_month = datetime(now.year, now.month + 1, 1, tzinfo=now.tzinfo)
     # Get sorting parameters from the request
     sort_by = r.GET.get('sort_by')
     order = r.GET.get('order', 'asc')
     # If sorting parameters are present, add ordering
     if sort_by and order:
         if order == 'desc':
-            objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,
-                                                    Reporting_date_time__month=now.month).order_by(f'-{sort_by}')
+            objects = bookfaultmodel.objects.filter(
+                Reporting_date_time__gte=start_of_month,
+                Reporting_date_time__lt=start_of_next_month
+            ).order_by(f'-{sort_by}')
         else:
-            objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,
-                                                    Reporting_date_time__month=now.month).order_by(sort_by)
+            objects = bookfaultmodel.objects.filter(
+                Reporting_date_time__gte=start_of_month,
+                Reporting_date_time__lt=start_of_next_month
+            ).order_by(sort_by)
     else:
         # Define the queryset without ordering by default
-        objects = bookfaultmodel.objects.filter(Reporting_date_time__year=now.year,
-                                                Reporting_date_time__month=now.month)
+        objects = bookfaultmodel.objects.filter(
+            Reporting_date_time__gte=start_of_month,
+            Reporting_date_time__lt=start_of_next_month
+        )
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
         return export_to_excel(objects, flag, filename="Monthly_Faults.xlsx")

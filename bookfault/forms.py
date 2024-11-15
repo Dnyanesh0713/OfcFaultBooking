@@ -65,7 +65,7 @@ class updateform(forms.ModelForm):
         model = bookfaultmodel
         fields = (
         'SDCA', 'Routename', 'Reporting_date_time', 'Fault_Restored_Date_Time', 'SJC_Used', 'OFC_Used', 'OFC_Type',
-        'PLB_Used', 'Trial_Pit', 'Trench', 'Reason_Of_Fault', 'is_updated')
+        'PLB_Used', 'Trial_Pit', 'Trench', 'Reason_Of_Fault','latitude','longitude', 'is_updated')
 
         def __init__(self, *args, **kwargs):
             # Check if an instance is being updated
@@ -152,6 +152,18 @@ class updateform(forms.ModelForm):
                 'class': 'form-check-input',
                 'style': 'width: 5%;',
 
+            }),
+            'latitude': forms.NumberInput(attrs={
+                'step': '0.0000001',  # Optionally, set step for decimal precision
+                'class': 'form-control',
+                'placeholder': 'Enter the latitude coordinate',
+                'style': 'width: 37%;',
+            }),
+            'longitude': forms.NumberInput(attrs={
+                'step': '0.0000001',  # Optionally, set step for decimal precision
+                'class': 'form-control',
+                'placeholder': 'Enter the longitude coordinate',
+                'style': 'width: 37%;',
             }),
         }
 
@@ -249,10 +261,33 @@ class updateadminform(forms.ModelForm):
                 'style': 'width: 37%;',
 
             }),
+            'Transnet_ID': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter the Transnet ID for this fault',
+                'style': 'width: 37%;',
+            }),
+            'Admin_Remarks': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Admin Remarks if any',
+                'style': 'width: 37%;',
+            }),
 
+            'latitude': forms.NumberInput(attrs={
+                'step': '0.0000001',  # Optionally, set step for decimal precision
+                'class': 'form-control',
+                'placeholder': 'Enter the latitude coordinate',
+                'style': 'width: 37%;',
+            }),
+            'longitude': forms.NumberInput(attrs={
+                'step': '0.0000001',  # Optionally, set step for decimal precision
+                'class': 'form-control',
+                'placeholder': 'Enter the longitude coordinate',
+                'style': 'width: 37%;',
+            }),
             'is_updated': forms.CheckboxInput(attrs={
                 'class': 'form-check-input',
                 'style': 'width: 5%;',
 
             }),
+
         }

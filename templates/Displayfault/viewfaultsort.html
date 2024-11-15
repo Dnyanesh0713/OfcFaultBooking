@@ -1,3 +1,4 @@
+<!-- templates/Displayfault/viewfaults.html -->
 <!DOCTYPE html>
 {% extends 'baseall.html' %}
 {% load static %}
@@ -12,6 +13,33 @@
 {% block baseblock %}
 
 <h2 class="text-center mb-4 fancy-text1">All faults </h2>
+<!--Filter by date-->
+<!-- Date range filter form -->
+<div >
+    <div class="row d-flex align-items-center">
+        <div class="col-md-8 date-filter-form">
+            <form method="get" action="{% url 'displayallfaults' %}" class="d-flex align-items-center">
+                <label for="start_date" class="me-2">Start Date:</label>
+                <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date }}" class="form-control me-2">
+
+                <label for="end_date" class="me-2">End Date:</label>
+                <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date }}" class="form-control me-2">
+
+                <button type="submit" class="btn btn-primary">Filter by Date</button>
+            </form>
+        </div>
+
+        <div class="col-md-4 transnet-id-filter-form">
+            <form method="get" action="{% url 'displayallfaults' %}" class="d-flex align-items-center">
+                <label for="transnet_id" class="me-2">Transnet ID:</label>
+                <input type="text" id="transnet_id" name="transnet_id" value="{{ transnet_id }}" class="form-control me-2">
+
+                <button type="submit" class="btn btn-primary">Filter by Transnet ID</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="table-responsive">
     {% if objects %}
     <table class="table table-bordered table-striped table-hover">
@@ -70,7 +98,8 @@
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Total_downtime}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Transnet_ID}}</td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{{obj.Admin_Remarks}}</td>
-            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{% if obj.is_updated %}Updated{% else %}Not Updated{% endif %}</td>
+            <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}">{% if obj.is_updated %}Updated{%else %}Not Updated{% endif %}
+            </td>
             <td class="{% if obj.is_updated %}updated{% else %}not-updated{% endif %}"><a
                     href="/updateadmin/{{obj.id}}">
                 <button type="submit" class="btn btn-primary">Upadate Fault</button>
@@ -83,20 +112,20 @@
 
         {% endfor %}
     </table>
-    <div style="display: flex; justify-content: center; margin-top: 20px;margin-bottom:20px">
+
+    <div class="d-flex justify-content-center mt-4">
         <a href="?download=true" class="btn btn-primary">
             <i class="fas fa-file-excel"></i> Download Excel
         </a>
     </div>
     {% else %}
-    <h1 class="fancy-text1">No faults to show.....Thank you...!!!!</h1>
+    <h1>No faults to show..... Thank you!</h1>
     {% endif %}
 </div>
-<!--JavaScript For the Display Confirm Delete Button-->
+
 <script>
     function confirmDelete(id) {
         if (confirm("Are you sure you want to delete this Fault?")) {
-            // If user confirms, redirect to the delete view
             window.location.href = "/deletefault/" + id;
         }
     }

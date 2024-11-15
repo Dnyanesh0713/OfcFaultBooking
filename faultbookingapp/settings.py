@@ -163,5 +163,4 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # for testing purposre
 CSRF_TRUSTED_ORIGINS = [
-    'https://50cb-2409-40c2-801a-4842-7509-b075-7c77-4906.ngrok-free.app'
-]
+    'https://6579-2409-40c2-801f-3790-9975-24d4-e1f9-461d.ngrok-free.app']
