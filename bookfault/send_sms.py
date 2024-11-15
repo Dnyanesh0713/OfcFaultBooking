@@ -86,57 +86,35 @@ def msgsend():
 #**********************************************************************************************************************
 #*****************************For Sytem fault Messages*****************************************************************
 def msgsend_system_fault():
-    from django.utils import timezone
-    from dotenv import load_dotenv
-    import os
-    from twilio.rest import Client
-
-    # Fetch the specific record by date
-    try:
-        obj = bookfaultmodel.objects.get(Fault_Restored_Date_Time=date)
-    except bookfaultmodel.DoesNotExist:
-        print("No record found for the provided date.")
-        obj = None
-
-    not_required_items = ['Traffic_Affected', 'Remarks', 'is_updated', 'Transnet_ID', 'Admin_Remarks']
-
-    if obj:
-        filtered_dict = {}
-
-        # Add all fields except Reporting_date_time and Fault_Restored_Date_Time first
-        for field in obj._meta.fields:
-            field_name = field.name
-            if field_name not in not_required_items and field_name not in ['Reporting_date_time',
-                                                                           'Fault_Restored_Date_Time']:
-                filtered_dict[field_name] = getattr(obj, field_name)
-
-        # Add Fault_Restored_Date_Time and Reporting_date_time at the second-to-last position
-        if obj.Reporting_date_time:
-            utc_datetime = obj.Reporting_date_time  # Assuming this is in UTC
+    obj = bookfaultmodel.objects.all().values().last()
+    not_requred = ['Fault_Restored_Date_Time', 'SJC_Used', 'OFC_Used', 'OFC_Type', 'PLB_Used', 'Trial_Pit', 'Trench',
+                   'Reason_Of_Fault', 'is_updated', 'Total_downtime', 'Transnet_ID', 'Admin_Remarks']
+    # Convert `Reporting_date_time` to local time (IST) if it exists
+    filtered_dict = {}
+    for key, value in obj.items():
+        if key == 'Reporting_date_time' and value:
+            utc_datetime = value  # Assuming `value` is in UTC
             local_datetime = timezone.localtime(utc_datetime, timezone.get_current_timezone())
-            filtered_dict['Reporting_date_time'] = local_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            filtered_dict[key] = local_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        elif key not in not_requred:
+            filtered_dict[key] = value
 
-        if obj.Fault_Restored_Date_Time:
-            utc_datetime = obj.Fault_Restored_Date_Time  # Assuming this is in UTC
-            local_datetime = timezone.localtime(utc_datetime, timezone.get_current_timezone())
-            filtered_dict['Fault_Restored_Date_Time'] = local_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    # Write the filtered dictionary to the text file
+    with open('my_file.txt', 'w', encoding='utf-8') as f:
+        f.write(f'''*"Fault Alert...!!!" Your {filtered_dict['Routename'].upper()} Route Sysyem Failed.*\n''')
+        for key, value in filtered_dict.items():
+            f.write(f'{key}: {value}\n')
 
-        # Write the filtered dictionary to the text file
-        with open('my_file2.txt', 'w', encoding='utf-8') as f:
-            for key, value in filtered_dict.items():
-                f.write(f'{key}: {value}\n')
+    load_dotenv()  # Load environment variables from .env file
+    account_sid = os.environ.get('account_sid')
+    auth_token = os.environ.get('auth_token')
 
-        load_dotenv()  # Load environment variables from .env file
-        account_sid = os.environ.get('account_sid')
-        auth_token = os.environ.get('auth_token')
-
-        client = Client(account_sid, auth_token)
-        client.messages.create(
-            body='{}'.format(readfile_restore()),
-            from_='whatsapp:+14155238886',
-            to='whatsapp:+917588380713'
-        )
-
+    client = Client(account_sid, auth_token)
+    client.messages.create(
+        body='{}'.format(readfile()),
+        from_='whatsapp:+14155238886',
+        to='whatsapp:+917588380713'
+    )
 
 #**********************************************************************************************************************
 #*****************************For geting restoration message **********************************************************

@@ -1,10 +1,10 @@
-*"Fault Alert...!!!" Your JAMKHED - RAJURI Route Failed please restore it on priority.*
-id: 11
-SDCA: Shevgaon
-Routename: jamkhed - rajuri
-FaultType: OFC CUT
-Reporting_date_time: 2024-11-13 22:52:00
-Traffic_Affected: ad
-Remarks: 
+*"Fault Alert...!!!" Your JAMKHED - KHARDA Route Sysyem Failed.*
+id: 13
+SDCA: Parner
+Routename: Jamkhed - Kharda
+FaultType: SYSTEM
+Reporting_date_time: 2024-11-14 19:43:00
+Traffic_Affected: na
+Remarks: na
 latitude: None
 longitude: None

@@ -1,17 +1,17 @@
-*"Good News...!!!" Your RUMBHODI-PIMPALGAON NKW Route Fault Restored Successfully Please find below the details of material used:.*
-id: 2
-SDCA: Akole
-Routename: RUMBHODI-PIMPALGAON NKW
-FaultType: OFC CUT
-SJC_Used: 02
-OFC_Used: 40
-OFC_Type: 24
-PLB_Used: 0
-Trial_Pit: 0
+*"Good News...!!!" Your JAMKHED - KHARDA Route Fault Restored Successfully Please find below the details of material used:.*
+id: 12
+SDCA: Parner
+Routename: Jamkhed - Kharda
+FaultType: SYSTEM
+SJC_Used: 0
+OFC_Used: 52
+OFC_Type: 4F
+PLB_Used: 2
+Trial_Pit: 45
 Trench: 0
-Reason_Of_Fault: OFC CUT
-Total_downtime: 0 days, 5 hours, 26 minutes
+Reason_Of_Fault: d
+Total_downtime: 1 days, 0 hours, 4 minutes
 latitude: 19.119228
 longitude: 74.743504
-Reporting_date_time: 2024-11-12 10:21:00
-Fault_Restored_Date_Time: 2024-11-12 15:47:00
+Reporting_date_time: 2024-11-14 19:43:00
+Fault_Restored_Date_Time: 2024-11-15 19:47:00
