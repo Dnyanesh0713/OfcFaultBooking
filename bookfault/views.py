@@ -218,61 +218,65 @@ def export_to_excel(queryset, flg, filename="data_export.xlsx"):
 
 # ************************************************************************************************************************
 # ******************** Display diff category of faults and Download Functions logic*************************************************************
-
-
-from datetime import datetime
-from django.utils import timezone
-from .models import bookfaultmodel
-
 def displayallfaults(r):
     # Get sorting parameters from the request
-    sort_by = r.GET.get('sort_by')
+    sort_by = r.GET.get('sort_by', 'id')  # Default sorting by ID
     order = r.GET.get('order', 'asc')
 
-    # Get start and end date from the request (in 'YYYY-MM-DD' format)
+    # Get start and end date from the request
     start_date_str = r.GET.get('start_date')
     end_date_str = r.GET.get('end_date')
     transnet_id = r.GET.get('transnet_id')
 
-    # Convert start and end dates to datetime objects if they are provided
+    # Initialize filtered_objects
+    filtered_objects = bookfaultmodel.objects.all()
+
+    # Apply date filtering if start and end dates are provided
     if start_date_str and end_date_str:
-        global filesave
-        # Convert the datetime string (e.g., '2024-11-01T13:27') to a datetime object
         dts = datetime.strptime(start_date_str, "%Y-%m-%dT%H:%M")
         dte = datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M")
         aware_datetimes1 = timezone.make_aware(dts, timezone.get_current_timezone())
         aware_datetimes2 = timezone.make_aware(dte, timezone.get_current_timezone())
-        formatted_datetimes1 = aware_datetimes1.strftime("%Y-%m-%d %H:%M:%S%z")
-        formatted_datetimes2 = aware_datetimes2.strftime("%Y-%m-%d %H:%M:%S%z")
-        filters = {}
-        filters['Reporting_date_time__gte'] = formatted_datetimes1
-        filters['Reporting_date_time__lte'] = formatted_datetimes2
+        filtered_objects = filtered_objects.filter(
+            Reporting_date_time__gte=aware_datetimes1,
+            Reporting_date_time__lte=aware_datetimes2,
+        )
 
-        objects = bookfaultmodel.objects.filter(**filters)
-        filesave = objects
+    # Apply Transnet ID filtering if provided
+    if transnet_id:
+        filtered_objects = filtered_objects.filter(Transnet_ID=transnet_id)
 
-    elif transnet_id:
-        objects = [bookfaultmodel.objects.get(Transnet_ID=transnet_id)]
-        filesave = objects
-    else:
-        objects = bookfaultmodel.objects.all()
+    # Apply sorting
+    if order == 'desc':
+        sort_by = f"-{sort_by}"
+    filtered_objects = filtered_objects.order_by(sort_by)
 
-    # Download functionality
+    # Preserve filters and sorting for download and email
     if r.GET.get('download') == 'true':  # Check if download is requested
-        flag = 0
-        return export_to_excel(filesave, flag, filename="All_Faults.xlsx")
+        flag = 0  # Flag for export_to_excel
+        return export_to_excel(filtered_objects, flag, filename="Filtered_Faults.xlsx")
 
-    # Email functionality
     if r.GET.get('email') == 'true':  # Check if email is requested
-        flag = 1
-        flname = "All_Faults.xlsx"
-        tmpfile = export_to_excel(filesave, flag, filename="All_Faults.xlsx")
+        flag = 1  # Flag for export_to_excel
+        flname = "Filtered_Faults.xlsx"
+        tmpfile = export_to_excel(filtered_objects, flag, filename="Filtered_Faults.xlsx")
         send_email_with_attachment(tmpfile, flname)
-        success_message = "Your Email has been sent successfully!"  # Success message
-        messages.success(r, success_message)  # Add message to be shown in the modal
-        return redirect("/home/")  # Redirect after successful submission
+        messages.success(r, "Your Email has been sent successfully!")  # Success message
+        return redirect("/home/")
 
-    return render(r, "Displayfault/viewfaultsort.html", {"objects": objects, "sort_by": sort_by, "order": order})
+
+    context = {
+        "objects": filtered_objects,
+        "sort_by": sort_by.lstrip(),
+        "order": order,
+        "start_date": start_date_str,
+        "end_date": end_date_str,
+
+    }
+
+    return render(r, "Displayfault/viewfaultsort.html", context)
+
+
 
 def displaydailyfaults(r):
     today_start = timezone.localtime(timezone.now()).replace(hour=0, minute=0, second=0, microsecond=0)
