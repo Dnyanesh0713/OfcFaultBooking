@@ -1,10 +1,12 @@
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,include
 from bookfault import views as v1
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('API.urls')),
+
     path('', v1.loginhome),                            #homepage view
     path('home/', v1.home),                            #homepage view
     path('bookfault/', v1.OfcFaultView),          #OFC fault booking Page

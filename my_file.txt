@@ -1,10 +1,10 @@
 *"Fault Alert...!!!" Your JAMKHED - KHARDA Route Sysyem Failed.*
-id: 13
-SDCA: Parner
+id: 16
+SDCA: Jamkhed
 Routename: Jamkhed - Kharda
 FaultType: SYSTEM
-Reporting_date_time: 2024-11-14 19:43:00
-Traffic_Affected: na
-Remarks: na
+Reporting_date_time: 2024-11-28 19:39:00
+Traffic_Affected: ghfh
+Remarks: 
 latitude: None
 longitude: None
