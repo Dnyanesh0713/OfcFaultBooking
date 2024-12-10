@@ -9,8 +9,8 @@ from django.contrib import messages
 def send_email_with_attachment(file,filename):
 
     # Subject and body of the email
-    subject = f'{filename.split('.')[0]} Report'
-    body = f'Please find the attached {filename.split('.')[0]} Report.'
+    subject = f"{filename.split('.')[0]} Report"
+    body = f"Please find the attached {filename.split('.')[0]} Report."
 
     # Recipient email addresses
     recipients = ['dnyaneshwar0713@gmail.com']
