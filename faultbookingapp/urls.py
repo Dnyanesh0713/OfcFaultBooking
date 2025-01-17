@@ -26,4 +26,6 @@ urlpatterns = [
     path('logout/', v1.user_logout, name='logout'),
     path('register/', v1.register, name='register'),
 
+    path('no-internet/', v1.offline_view, name='offline'), #for check client internet
+
 ]
