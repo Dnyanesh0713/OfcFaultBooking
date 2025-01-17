@@ -13,7 +13,7 @@ class InternetConnectivityMiddleware:
         except (requests.ConnectionError, requests.Timeout):
             # Return a custom response if there's no internet
             return HttpResponse(
-                "<h1>Internet Connection Required, Please Activate proxy using address http://10.64.4.12 and port 8080 in your proxy setting...</h1><p>Please connect to the internet to access this application.</p>",
+                "<h1>Internet Connection Required, Please Activate proxy using address http://10.64.4.12 and port 8080 in your proxy setting.</h1><p>Please connect to the internet to access this application.</p>",
                 content_type="text/html",
                 status=503
             )

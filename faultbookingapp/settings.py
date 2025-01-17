@@ -65,7 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware', #for login and logout action
     'middleware.auto_logout.AutoLogout',  #for auto logout feature
     'middleware.changetimezone.TimezoneMiddleware', # For Converting the timezone as Local Time for every Request
-    'middleware.internetcheck.InternetConnectivityMiddleware', # For checking the internet connection check
+    'middleware.internetcheck.InternetConnectivityMiddleware', # For checking the internet connection
 ]
 
 ROOT_URLCONF = 'faultbookingapp.urls'
