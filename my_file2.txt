@@ -10,8 +10,8 @@ PLB_Used: 0
 Trial_Pit: 2
 Trench: 0
 Reason_Of_Fault: cable cut in pipeline
-Total_downtime: 0 days, 6 hours, 36 minutes
+Total_downtime: 12 days, 7 hours, 40 minutes
 latitude: 19.119228
 longitude: 74.743504
 Reporting_date_time: 2024-11-28 13:00:00
-Fault_Restored_Date_Time: 2024-11-28 19:36:00
+Fault_Restored_Date_Time: 2024-12-10 20:40:00
