@@ -41,7 +41,7 @@ def readfile():
 def msgsend():
 
     obj = bookfaultmodel.objects.all().values().last()
-    not_requred = ['Fault_Restored_Date_Time','SJC_Used','OFC_Used','OFC_Type','PLB_Used','Trial_Pit','Trench','Reason_Of_Fault' ,'is_updated','Total_downtime','Transnet_ID','Admin_Remarks']
+    not_requred = ['Fault_Restored_Date_Time','SJC_Used','OFC_Used','OFC_Type','PLB_Used','Trial_Pit','Trench','Reason_Of_Fault' ,'is_updated','Total_downtime','Transnet_ID','Admin_Remarks','latitude','longitude',]
     # Convert `Reporting_date_time` to local time (IST) if it exists
     filtered_dict = {}
     for key, value in obj.items():
@@ -75,7 +75,7 @@ def msgsend():
 def msgsend_system_fault():
     obj = bookfaultmodel.objects.all().values().last()
     not_requred = ['Fault_Restored_Date_Time', 'SJC_Used', 'OFC_Used', 'OFC_Type', 'PLB_Used', 'Trial_Pit', 'Trench',
-                   'Reason_Of_Fault', 'is_updated', 'Total_downtime', 'Transnet_ID', 'Admin_Remarks']
+                   'Reason_Of_Fault', 'is_updated', 'Total_downtime', 'Transnet_ID', 'Admin_Remarks','latitude','longitude',]
     # Convert `Reporting_date_time` to local time (IST) if it exists
     filtered_dict = {}
     for key, value in obj.items():
