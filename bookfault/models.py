@@ -9,12 +9,16 @@ FAULT_CHOICES = (
     ('1','Select the type of fault'),
     ('SYSTEM','SYSTEM'),
     ('OFC CUT', 'OFC CUT'),
+    ('SINGLE FIBRE', 'SINGLE FIBRE'),
     ('PATCH CHORD','PATCH CHORD'),
+    ('POWER LOSS','POWER LOSS'),
+    ('BBNL OFC CUT','BBNL OFC CUT'),
+    ('MAHA_IT OFC CUT','MAHA_IT OFC CUT'),
 )
 
 SDCA_CHOICES = (
     ('1', 'Select your SDCA'),
-    ('Ahilyanagar', 'Ahilyanagar'),
+    ('ANR', 'ANR'),
     ('Akole', 'Akole'),
     ('Jamkhed', 'Jamkhed'),
     ('Karjat', 'Karjat'),

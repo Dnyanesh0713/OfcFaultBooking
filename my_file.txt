@@ -1,10 +1,10 @@
-*"Fault Alert...!!!" Your JAMKHED - KHARDA Route Sysyem Failed.*
-id: 16
-SDCA: Jamkhed
-Routename: Jamkhed - Kharda
+*"Fault Alert...!!!" Your ANR-JMD Route Sysyem Failed.*
+id: 20
+SDCA: Ahilyanagar
+Routename: anr-jmd
 FaultType: SYSTEM
-Reporting_date_time: 2024-11-28 19:39:00
-Traffic_Affected: ghfh
-Remarks: 
+Reporting_date_time: 2025-01-13 22:01:00
+Traffic_Affected: dsf
+Remarks: af
 latitude: None
 longitude: None

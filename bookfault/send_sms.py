@@ -4,52 +4,39 @@ from .models import bookfaultmodel
 import os
 from dotenv import load_dotenv
 from django.utils import timezone
+from datetime import date
+
+
+def get_non_restored_faults_summary():
+    # Get all non-restored faults grouped by SDCA
+    faults = bookfaultmodel.objects.filter(is_updated=False)
+
+    summary1 = "*Daily Non-Restored Faults Report*\n\n"
+    summary2 = "*Daily Non-Restored Faults Report*\n\n"
+    grouped_faults = {}
+
+    for fault in faults:
+        grouped_faults.setdefault(fault.SDCA, []).append(fault)
+
+    for sdca, sdca_faults in grouped_faults.items():
+        if sdca in ['Jamkhed','Karjat','Parner','Pathardi','Shevgaon','Shrigonda','ANR']:
+            summary1 += f"*SDCA: {sdca}*\n"
+            for idx, fault in enumerate(sdca_faults, start=1):  # Enumerate faults for numbering
+                summary1 += f"{idx}. {fault.Routename}\n"
+        else:
+            summary2 += f"*SDCA: {sdca}*\n"
+            for idx, fault in enumerate(sdca_faults, start=1):  # Enumerate faults for numbering
+                summary2 += f"{idx}. {fault.Routename}\n"
+
+    print(summary1)
+    print(summary2)
+    return summary1,summary2
 
 
 def readfile():
     with open('my_file.txt', 'r') as fp:
         content = fp.read()
     return content
-
-
-# def sendwpmsg():
-#
-#     from selenium.webdriver.support.ui import WebDriverWait
-#     from selenium.webdriver.support import expected_conditions as EC
-#     from selenium import webdriver
-#     from selenium.webdriver.chrome.service import Service
-#     from webdriver_manager.chrome import ChromeDriverManager
-#     from selenium.webdriver.common.action_chains import ActionChains
-#     from selenium.webdriver.common.keys import Keys
-#     from selenium.webdriver.common.by import By
-#     import time
-#
-#     # Configure Chrome options to connect to the debugging port
-#     chrome_options = webdriver.ChromeOptions()
-#     chrome_options.add_experimental_option("debuggerAddress", "localhost:9222")
-#
-#     # Initialize WebDriver with the configured options to connect to the open Chrome session
-#     driver = webdriver.Chrome(options=chrome_options)
-#
-#     # Navigate to WhatsApp Web (assuming it’s already logged in in this session)
-#     driver.get("https://web.whatsapp.com")
-#     time.sleep(10)
-#     message = readfile()
-#     link = 'https://web.whatsapp.com/send/?phone=919403547612'
-#     driver.get(link)
-#     time.sleep(15)
-#     actions = ActionChains(driver)
-#     print(message)
-#     for line in message.split('\n'):
-#         actions.send_keys(line)
-#         # SHIFT + ENTER to create next line
-#         actions.key_down(Keys.SHIFT).send_keys(Keys.ENTER).key_up(Keys.SHIFT)
-#     actions.send_keys(Keys.ENTER)
-#     actions.perform()
-#     time.sleep(5)
-#     driver.quit()
-#
-#     print('Message sent successfully..!!')
 
 def msgsend():
 
@@ -173,3 +160,18 @@ def restorationmsg(date):
             from_='whatsapp:+14155238886',
             to='whatsapp:+917588380713'
         )
+
+#**************************************************************************************************************************
+#****************************For Daily schedule of messages ******************************************************************
+
+def send_whatsapp_message(summary):
+    load_dotenv()  # Load environment variables from .env file
+    account_sid = os.environ.get('account_sid')
+    auth_token = os.environ.get('auth_token')
+
+    client = Client(account_sid, auth_token)
+    client.messages.create(
+        body=summary,
+        from_='whatsapp:+14155238886',
+        to='whatsapp:+917588380713'
+    )
