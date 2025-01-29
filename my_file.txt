@@ -1,8 +1,8 @@
-*"Fault Alert...!!!" Your JAMKHED-     RAJURII Route Failed please restore it on priority.*
-id: 23
-SDCA: Jamkhed
-Routename: JAMKHED-     RAJURIi
-FaultType: OFC CUT
-Reporting_date_time: 2025-01-02 21:16:00
-Traffic_Affected: AF
-Remarks: ASDF
+*"Fault Alert...!!!" Your KEDGAON-HINGANGAON Route Sysyem Failed.*
+id: 24
+SDCA: Kopergaon
+Routename: KEDGAON-HINGANGAON
+FaultType: SYSTEM
+Reporting_date_time: 2025-01-21 22:34:00
+Traffic_Affected: asfg
+Remarks: zd

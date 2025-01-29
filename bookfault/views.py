@@ -287,12 +287,12 @@ def displayallfaults(r):
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0  # Flag for export_to_excel
         return export_to_excel(filtered_objects, flag,
-        filename=(f"Filtered_Faults_{datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M').date()}_to_{datetime.strptime(end_date_str,'%Y-%m-%dT%H:%M').date()}.xlsx)") if (start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none') else "All_Faults.xlsx")
+        filename=(f"Filtered_Faults_{datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M').date()}_to_{datetime.strptime(end_date_str,'%Y-%m-%dT%H:%M').date()}.xlsx") if (start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none') else "All_Faults.xlsx")
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1  # Flag for export_to_excel
         flname = "Filtered_Faults.xlsx"
         tmpfile = export_to_excel(filtered_objects, flag,
-        filename=(f"Filtered_Faults_{datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M').date()}_to_{datetime.strptime(end_date_str,'%Y-%m-%dT%H:%M').date()}.xlsx)") if (start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none') else "All_Faults.xlsx")
+        filename=(f"Filtered_Faults_{datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M').date()}_to_{datetime.strptime(end_date_str,'%Y-%m-%dT%H:%M').date()}.xlsx") if (start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none') else "All_Faults.xlsx")
         send_email_with_attachment(tmpfile, flname)
         messages.success(r, "Your Email has been sent successfully!")  # Success message
         return redirect("/home/")
