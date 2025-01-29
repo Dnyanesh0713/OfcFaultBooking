@@ -1,10 +1,8 @@
-*"Fault Alert...!!!" Your ANR-JMD Route Sysyem Failed.*
-id: 20
-SDCA: Ahilyanagar
-Routename: anr-jmd
-FaultType: SYSTEM
-Reporting_date_time: 2025-01-13 22:01:00
-Traffic_Affected: dsf
-Remarks: af
-latitude: None
-longitude: None
+*"Fault Alert...!!!" Your JAMKHED-     RAJURII Route Failed please restore it on priority.*
+id: 23
+SDCA: Jamkhed
+Routename: JAMKHED-     RAJURIi
+FaultType: OFC CUT
+Reporting_date_time: 2025-01-02 21:16:00
+Traffic_Affected: AF
+Remarks: ASDF

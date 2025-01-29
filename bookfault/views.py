@@ -12,12 +12,28 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
+from django.utils.formats import date_format
 from openpyxl import Workbook
 from .forms import bookfaultform, restoreform, updateform, updateadminform
 from .models import bookfaultmodel, calculate_downtime
 from .send_email import send_email_with_attachment
 from .send_sms import msgsend,restorationmsg,msgsend_system_fault
+from django.utils.safestring import mark_safe
 
+#********************************************Calculate local Date*******************************************************
+from django.utils import timezone
+import pytz
+
+def calc_local_date():
+    # Get the current time in UTC
+    utc_now = timezone.now()
+    Local_tz = pytz.timezone('Asia/Kolkata')
+    Local_date = utc_now.astimezone(Local_tz)
+    return Local_date.strftime('%d:%m:%Y')
+def calc_local_month():
+    current_date = datetime.now()
+    return current_date.strftime('%B_%Y')
+#**************************************************************************************************************************
 
 def loginhome(r):
     if r.method == 'POST':
@@ -54,12 +70,27 @@ def OfcFaultView(r):
             if form.cleaned_data['SDCA'] == "1":
                 form.add_error('SDCA', 'Please select your SDCA.')
             else:
-                form.save()
-                sortsdca(r.POST['SDCA'],r.POST['FaultType'])
-                obj = bookfaultmodel.objects.all().values_list('id').last()
-                success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
-                messages.success(r, success_message)  # Add message to be shown in the modal
-                return redirect("/bookfault/")  # Redirect after successful submission
+                route_name = form.cleaned_data['Routename']
+                route_name = route_name.strip().lower()
+                route_name = route_name.replace(" to ", " - ")
+                route_name = re.sub(r'\s*-\s*', ' - ', route_name)
+                # Check if a fault with the same RouteName exists and is not updated
+                existing_fault = bookfaultmodel.objects.filter(
+                    Routename__iexact=route_name,
+                    is_updated=False
+                ).first()  # Fetch the first matching record
+
+                if existing_fault:
+                    # If such a fault exists, raise an error with the ID, route_name, and SDCA
+                    error_message = f"A fault with the same route already exists with <br>Fault ID: {existing_fault.id} <br>Route Name: {existing_fault.Routename} <br>SDCA: {existing_fault.SDCA}. <br>It is not Restored yet."
+                    form.add_error('Routename', mark_safe(error_message))
+                else:
+                    form.save()
+                    sortsdca(r.POST['SDCA'],r.POST['FaultType'])
+                    obj = bookfaultmodel.objects.all().values_list('id').last()
+                    success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
+                    messages.success(r, success_message)  # Add message to be shown in the modal
+                    return redirect("/bookfault/")  # Redirect after successful submission
     return render(r, 'bookfault/bookfault.html', {'form': form})
 
 
@@ -229,10 +260,11 @@ def displayallfaults(r):
     transnet_id = r.GET.get('transnet_id')
 
     # Initialize filtered_objects
+
     filtered_objects = bookfaultmodel.objects.all()
 
     # Apply date filtering if start and end dates are provided
-    if start_date_str and end_date_str:
+    if start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none':
         dts = datetime.strptime(start_date_str, "%Y-%m-%dT%H:%M")
         dte = datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M")
         aware_datetimes1 = timezone.make_aware(dts, timezone.get_current_timezone())
@@ -243,7 +275,7 @@ def displayallfaults(r):
         )
 
     # Apply Transnet ID filtering if provided
-    if transnet_id:
+    if transnet_id and transnet_id.lower() != 'none':
         filtered_objects = filtered_objects.filter(Transnet_ID=transnet_id)
 
     # Apply sorting
@@ -254,12 +286,13 @@ def displayallfaults(r):
     # Preserve filters and sorting for download and email
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0  # Flag for export_to_excel
-        return export_to_excel(filtered_objects, flag, filename="Filtered_Faults.xlsx")
-
+        return export_to_excel(filtered_objects, flag,
+        filename=(f"Filtered_Faults_{datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M').date()}_to_{datetime.strptime(end_date_str,'%Y-%m-%dT%H:%M').date()}.xlsx)") if (start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none') else "All_Faults.xlsx")
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1  # Flag for export_to_excel
         flname = "Filtered_Faults.xlsx"
-        tmpfile = export_to_excel(filtered_objects, flag, filename="Filtered_Faults.xlsx")
+        tmpfile = export_to_excel(filtered_objects, flag,
+        filename=(f"Filtered_Faults_{datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M').date()}_to_{datetime.strptime(end_date_str,'%Y-%m-%dT%H:%M').date()}.xlsx)") if (start_date_str and end_date_str and start_date_str.lower() != 'none' and end_date_str.lower() != 'none') else "All_Faults.xlsx")
         send_email_with_attachment(tmpfile, flname)
         messages.success(r, "Your Email has been sent successfully!")  # Success message
         return redirect("/home/")
@@ -305,12 +338,12 @@ def displaydailyfaults(r):
 
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
-        return export_to_excel(objects, flag, filename="Daily_Faults.xlsx")
+        return export_to_excel(objects, flag, filename=f"Not_Restored_faults_{calc_local_date()}.xlsx")
 
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Daily_Faults.xlsx"
-        tmpfile = export_to_excel(objects, flag, filename="Daily_Faults.xlsx")
+        tmpfile = export_to_excel(objects, flag, filename=f"Not_Restored_faults_{calc_local_date()}.xlsx")
         send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
         messages.success(r, success_message)  # Add message to be shown in the modal
@@ -348,12 +381,12 @@ def displaymonthlyfaults(r):
         )
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
-        return export_to_excel(objects, flag, filename="Monthly_Faults.xlsx")
+        return export_to_excel(objects, flag, filename=f"Monthly_Faults_{calc_local_month()}.xlsx")
 
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Monthly_Faults.xlsx"
-        tmpfile = export_to_excel(objects, flag, filename="Monthly_Faults.xlsx")
+        tmpfile = export_to_excel(objects, flag, filename=f"Monthly_Faults_{calc_local_month()}.xlsx")
         send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
         messages.success(r, success_message)  # Add message to be shown in the modal
@@ -377,12 +410,12 @@ def displaynotrestored(r):
 
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
-        return export_to_excel(objects, flag, filename="Not_Restored_faults.xlsx")
+        return export_to_excel(objects, flag, filename=f"Not_Restored_faults_{calc_local_date()}.xlsx")
 
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Not_Restored_faults.xlsx"
-        tmpfile = export_to_excel(objects, flag, filename="Not_Restored_faults.xlsx")
+        tmpfile = export_to_excel(objects, flag, filename=f"Not_Restored_faults_{calc_local_date()}.xlsx")
         send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
         messages.success(r, success_message)  # Add message to be shown in the modal
