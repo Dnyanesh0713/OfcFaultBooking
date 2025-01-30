@@ -18,7 +18,8 @@ from .forms import bookfaultform, restoreform, updateform, updateadminform
 from .models import bookfaultmodel, calculate_downtime
 from .send_email import send_email_with_attachment
 from .send_sms import msgsend,restorationmsg,msgsend_system_fault
-from django.utils.safestring import mark_safe
+
+
 
 #********************************************Calculate local Date*******************************************************
 from django.utils import timezone
@@ -70,27 +71,12 @@ def OfcFaultView(r):
             if form.cleaned_data['SDCA'] == "1":
                 form.add_error('SDCA', 'Please select your SDCA.')
             else:
-                route_name = form.cleaned_data['Routename']
-                route_name = route_name.strip().lower()
-                route_name = route_name.replace(" to ", " - ")
-                route_name = re.sub(r'\s*-\s*', ' - ', route_name)
-                # Check if a fault with the same RouteName exists and is not updated
-                existing_fault = bookfaultmodel.objects.filter(
-                    Routename__iexact=route_name,
-                    is_updated=False
-                ).first()  # Fetch the first matching record
-
-                if existing_fault:
-                    # If such a fault exists, raise an error with the ID, route_name, and SDCA
-                    error_message = f"A fault with the same route already exists with <br>Fault ID: {existing_fault.id} <br>Route Name: {existing_fault.Routename} <br>SDCA: {existing_fault.SDCA}. <br>It is not Restored yet."
-                    form.add_error('Routename', mark_safe(error_message))
-                else:
-                    form.save()
-                    sortsdca(r.POST['SDCA'],r.POST['FaultType'])
-                    obj = bookfaultmodel.objects.all().values_list('id').last()
-                    success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
-                    messages.success(r, success_message)  # Add message to be shown in the modal
-                    return redirect("/bookfault/")  # Redirect after successful submission
+                form.save()
+                sortsdca(r.POST['SDCA'],r.POST['FaultType'])
+                obj = bookfaultmodel.objects.all().values_list('id').last()
+                success_message = f"Your fault has been submitted successfully! Your Fault id is: {obj[0]}"  # Success message
+                messages.success(r, success_message)  # Add message to be shown in the modal
+                return redirect("/bookfault/")  # Redirect after successful submission
     return render(r, 'bookfault/bookfault.html', {'form': form})
 
 
@@ -338,12 +324,12 @@ def displaydailyfaults(r):
 
     if r.GET.get('download') == 'true':  # Check if download is requested
         flag = 0
-        return export_to_excel(objects, flag, filename=f"Not_Restored_faults_{calc_local_date()}.xlsx")
+        return export_to_excel(objects, flag, filename=f"Daily_Faults_{calc_local_date()}.xlsx")
 
     if r.GET.get('email') == 'true':  # Check if email is requested
         flag = 1
         flname = "Daily_Faults.xlsx"
-        tmpfile = export_to_excel(objects, flag, filename=f"Not_Restored_faults_{calc_local_date()}.xlsx")
+        tmpfile = export_to_excel(objects, flag, filename=f"Daily_Faults_{calc_local_date()}.xlsx")
         send_email_with_attachment(tmpfile, flname)
         success_message = "Your Email has been sent successfully!"  # Success message
         messages.success(r, success_message)  # Add message to be shown in the modal
